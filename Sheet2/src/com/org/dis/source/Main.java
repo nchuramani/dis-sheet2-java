@@ -46,13 +46,15 @@ public class Main {
 		System.out.println("Press 1 for Agent Managemnt");
 		System.out.println("Press 2 for Estate Managemnt");
 		System.out.println("Press 3 for Contract Managemnt");
+		System.out.println("Press 4 to exit");
+
 		try{
 			 choice = (char) new BufferedReader(new InputStreamReader(System.in)).read();
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 		if (choice == '1'){
-			AgentManagement am = new AgentManagement();
+			AgentManagement am = new AgentManagement(userlogin);
 			am.setLogin(userlogin);
 			am.agentMenu();
 		}
@@ -61,6 +63,10 @@ public class Main {
 		}
 		else if(choice=='3'){
 			System.out.println("Call Contract Management");
+		}
+		else if(choice=='4'){
+			System.out.println("Thank you!");
+			System.exit(0);
 		}
 		else{
 			System.out.println("Invalid choice! Chose again!");
