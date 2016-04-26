@@ -155,7 +155,7 @@ public class AgentManagement {
 			agentMenu();
 		}
 		else if(choice=='4'){
-			Main.menuDisplay(this.getloggedinUser());
+			Main.menuDisplay();
 		}
 		else{
 			System.out.println("Invalid choice! Chose again!");
@@ -213,7 +213,7 @@ public class AgentManagement {
 			
 			pstm.executeUpdate();
 			
-			System.out.println("Agent" + this.getLogin() + "added.");
+			System.out.println("Agent " + this.getLogin() + " added.");
 			
 			pstm.close();
 			con.closeConnection();;
