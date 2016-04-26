@@ -65,7 +65,7 @@ public class AgentManagement {
 			createAgent();
 		}
 		else if(choice=='2'){
-			System.out.println("-------------------------------------------------");
+		/*	System.out.println("-------------------------------------------------");
 			System.out.println("------------WELCOME " + this.getLogin() + "------------------------");
 			System.out.println("-----UPDATE AGENT MANAGEMENT MODULE--------------");
 			System.out.println("-------------------------------------------------");
@@ -85,7 +85,11 @@ public class AgentManagement {
 			catch(IOException io){
 				io.printStackTrace();
 			}
-			createAgent();		}
+			createAgent();		
+		*/
+		System.out.println("Call Update");
+		}
+
 		else if(choice=='3'){
 			System.out.println("Call Delete");
 		}
