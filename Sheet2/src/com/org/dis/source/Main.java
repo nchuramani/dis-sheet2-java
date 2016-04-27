@@ -6,7 +6,7 @@ import java.io.InputStreamReader;
 
 public class Main {
 	
-	public static String loggedinuser;
+	public static String loggedinuser = "ADMIN";
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
@@ -58,7 +58,7 @@ public class Main {
 			try{
 				String pass = new BufferedReader(new InputStreamReader(System.in)).readLine();
 				if(pass.equals("passwordagent")){
-					AgentManagement am = new AgentManagement("ADMIN");
+					AgentManagement am = new AgentManagement(Main.loggedinuser);
 					am.agentMenu();
 				}
 				else{
@@ -74,11 +74,13 @@ public class Main {
 			//System.out.println("Call Estate Management");
 
 			login();
-			EstateManagementTemp est = new EstateManagementTemp(Main.loggedinuser);
+			EstateManagement est = new EstateManagement(Main.loggedinuser);
 			est.estateMenu();
 		}
 		else if(choice=='3'){
-			System.out.println("Call Contract Management");
+			//System.out.println("Call Contract Management");
+			ContractManagement contr = new ContractManagement(Main.loggedinuser);
+			contr.contractMenu();
 		}
 		else if(choice=='4'){
 			System.out.println("Thank you!");
