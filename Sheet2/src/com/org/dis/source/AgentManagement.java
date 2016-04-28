@@ -197,14 +197,15 @@ public class AgentManagement {
 	public void createAgent(){
 		DBConManager con = new DBConManager();
 		con.CreateConnection();
+		String sql;
+		PreparedStatement pstm;
 		try{
 			/**
 			 * Login credentials are checked in the Estate_Agent table and the 
 			 * corresponding ID is returned.
 			 */
-			String sql;
 			sql = "INSERT INTO ESTATE_AGENT VALUES (?,?,?,?)";
-			PreparedStatement pstm = con.getConnection().prepareStatement(sql);
+			pstm = con.getConnection().prepareStatement(sql);
 			pstm.setString(1, this.getName());
 			pstm.setString(2, this.getAddress());
 			pstm.setString(3, this.getLogin());
@@ -216,6 +217,7 @@ public class AgentManagement {
 			System.out.println("Agent " + this.getLogin() + " added.");
 			
 			pstm.close();
+			con.getConnection().commit();
 			con.closeConnection();;
 		}
 		catch(Exception e){
@@ -306,6 +308,7 @@ public class AgentManagement {
 			
 			pstm.executeUpdate();
 			pstm.close();
+			con.getConnection().commit();
 			con.closeConnection();;
 		}
 		catch(Exception e){
@@ -326,6 +329,7 @@ public class AgentManagement {
 			
 			pstm.executeUpdate();
 			pstm.close();
+			con.getConnection().commit();
 			con.closeConnection();;
 		}
 		catch(Exception e){

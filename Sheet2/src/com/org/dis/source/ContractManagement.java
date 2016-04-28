@@ -7,6 +7,8 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Savepoint;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -38,6 +40,8 @@ public class ContractManagement {
 		
 	}
 	public void contractMenu(){
+		DBConManager con = new DBConManager();
+		con.CreateConnection();
 		char choice = '0';
 		System.out.println("-------------------------------------------------");
 		System.out.println("------------CONTRACT MANAGEMENT --------------");
@@ -142,9 +146,12 @@ public class ContractManagement {
 			System.out.println("------VIEW CONTRACTS MODULE--------------");
 			System.out.println("-------------------------------------------------");
 			viewPurchaseContracts();
-			viewSaleContracts();
+			contractMenu();
+			//viewSaleContracts();
+			
 		}
 		else if(choice=='4'){
+			con.closeConnection();
 			Main.menuDisplay();
 		}
 		else{
@@ -155,10 +162,9 @@ public class ContractManagement {
 	
 	
 	public void createPerson(){
-		DBConManager con = new DBConManager();
-		con.CreateConnection();
 		try{
-			
+			DBConManager con = new DBConManager();
+			con.CreateConnection();
 			String sql;
 			sql = "INSERT INTO PERSON VALUES (?,?,?)";
 			PreparedStatement pstm = con.getConnection().prepareStatement(sql);
@@ -169,6 +175,7 @@ public class ContractManagement {
 		
 			System.out.println("Person" + this.getFirstName() +  " "+this.getName() +"added.");
 			pstm.close();
+			con.getConnection().commit();
 			con.closeConnection();;
 		}
 		catch(Exception e){
@@ -251,7 +258,6 @@ public class ContractManagement {
 			}
 			rs.close();
 			pstm.close();
-			con.closeConnection();;
 		}
 		catch(Exception e){
 			e.printStackTrace();	
@@ -261,14 +267,18 @@ public class ContractManagement {
 	public void createContract(){
 		DBConManager con = new DBConManager();
 		con.CreateConnection();
+		Savepoint sv = null;
+		PreparedStatement pstm = null;
+		String sql;
 		try{
 			/**
 			 * Login credentials are checked in the Estate_Agent table and the 
 			 * corresponding ID is returned.
 			 */
-			String sql;
+			
+			sv = con.getConnection().setSavepoint("cc1");
 			sql = "INSERT INTO CONTRACT VALUES (?,?,?)";
-			PreparedStatement pstm = con.getConnection().prepareStatement(sql);
+			pstm = con.getConnection().prepareStatement(sql);
 			pstm.setString(1, this.getContract_no());
 			java.util.Date today = new java.util.Date();
 			this.setContract_date(new java.sql.Date(today.getTime()));
@@ -278,9 +288,7 @@ public class ContractManagement {
 			pstm.executeUpdate();
 			
 			System.out.println("Contract " + this.getContract_no() + "added.");
-			
-			pstm.close();
-			
+						
 			if(this.getContract_type()=='P'){
 				
 				sql = "INSERT INTO PURCHASE_CONTRACT VALUES (?,?,?,?,?,?)";
@@ -296,9 +304,7 @@ public class ContractManagement {
 				pstm.executeUpdate();
 				
 				System.out.println("Purchase Contract " + this.getContract_no() + "added.");
-				
-				pstm.close();
-				
+								
 			}
 			else if(this.getContract_type()=='T'){
 				
@@ -325,11 +331,23 @@ public class ContractManagement {
 				
 				System.out.println("Tenancy Contract  " + this.getContract_no() + "added.");
 				
-				pstm.close();
 			}
-			con.closeConnection();;
+			con.getConnection().commit();
+
 		}
 		catch(Exception e){
+			e.printStackTrace();
+			try {
+				con.getConnection().rollback(sv);
+			} catch (SQLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+		}
+		try {
+			pstm.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		contractMenu();
@@ -340,7 +358,7 @@ public class ContractManagement {
 		String c_no = null;
 		try{
 			/**
-			 * Autogenerate is used to get the max estateid from Estate and then increment it by 1. 
+			 * Autogenerate is used to get the max contractno from Contract and then increment it by 1. 
 			 */
 			String sql;
 			sql = "SELECT MAX(CONTRACT_NO) FROM CONTRACT";
@@ -353,7 +371,6 @@ public class ContractManagement {
 			}
 			rs.close();
 			pstm.close();
-			con.closeConnection();;
 		}
 		catch(Exception e){
 			e.printStackTrace();	
@@ -364,6 +381,7 @@ public class ContractManagement {
 		numeric = numeric+1;
 		c_no = alphanumeric[0].concat(String.format("%03d", numeric));
 		this.setContract_no(c_no);
+		
 	}
 	
 	public void viewPurchaseContracts()
@@ -373,23 +391,18 @@ public class ContractManagement {
 		try{
 			
 			String sql;
-			sql = "SELECT * FROM TENANCY_CONTRACT";
+			sql = "SELECT * FROM TENANCY_CONTRACT FULL OUTER JOIN PURCHASE_CONTRACT ON PURCHASE_CONTRACT.CONTRACT_NO = TENANCY_CONTRACT.CONTRACT_NO";
 			PreparedStatement pstm = con.getConnection().prepareStatement(sql);
 			System.out.println("-------------------------------------------------");
-			System.out.println("------DISPLAYING PURCHASE CONTRACTS --------------");
+			System.out.println("------DISPLAYING ALL CONTRACTS --------------");
 			System.out.println("-------------------------------------------------");
 			ResultSet rs = pstm.executeQuery();
 			ResultSetMetaData metaData = rs.getMetaData();
 			int columnCount = metaData.getColumnCount();
-			int rectno = 1;
 			while(rs.next()) {
-				System.out.println("-------------------------------------------------");
-				System.out.println("---- Tenancy Contract S. No. " + rectno + "---------------");
-				System.out.println("-------------------------------------------------");
-
-				rectno++;
-			    
 			    for(int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+			    	if (columnIndex > 1) System.out.print(",  ");
+				
 			        String columnValue = rs.getString(columnIndex);
 					System.out.println(metaData.getColumnName(columnIndex) + ": " + columnValue);
 			    }
@@ -398,9 +411,7 @@ public class ContractManagement {
 
 			}
 			rs.close();
-			pstm.close();
-			con.closeConnection();;
-			
+			pstm.close();			
 		}
 		catch(Exception e){
 			e.printStackTrace();
@@ -439,9 +450,7 @@ public class ContractManagement {
 
 			}
 			rs.close();
-			pstm.close();
-			con.closeConnection();;
-			
+			pstm.close();			
 		}
 		catch(Exception e){
 			e.printStackTrace();

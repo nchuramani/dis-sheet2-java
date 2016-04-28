@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import com.org.dis.db2manage.DBConManager;
 
@@ -366,11 +367,12 @@ public class EstateManagement{
 				
 				pstm.close();
 			}
-			con.closeConnection();;
+			con.getConnection().commit();
 		}
 		catch(Exception e){
 			e.printStackTrace();
 		}
+		con.closeConnection();;
 		estateMenu();
 	}
 	public void autoGenerate(){
@@ -392,7 +394,6 @@ public class EstateManagement{
 			}
 			rs.close();
 			pstm.close();
-			con.closeConnection();;
 		}
 		catch(Exception e){
 			e.printStackTrace();	
@@ -413,24 +414,25 @@ public class EstateManagement{
 			 * Read Estate is used read the details of the Estate requested. 
 			 */
 			String sql;
+			int readyflag = 0;
 			sql = "SELECT ESTATE_ID, CITY, POSTAL_CODE, STREET, STREET_NUMBER, SQUARE_AREA, AGENT_LOGIN  FROM ESTATE WHERE ESTATE_ID =?";
 			PreparedStatement pstm = con.getConnection().prepareStatement(sql);
 			pstm.setString(1, this.getEstate_id());
 			
 			ResultSet rs = pstm.executeQuery();
-			if(!rs.next()){
-				System.out.println("Invalid Estate ID! Try again!");
-				estateMenu();
-			}
 			while(rs.next()){
+				readyflag = 1;
 				this.setEstate_id(rs.getString(1));
 				this.setCity(rs.getString(2));
 				this.setPostcode(rs.getString(3));
 				this.setStreet(rs.getString(4));
 				this.setStreet_no(rs.getInt(5));
 				this.setSq_area(rs.getFloat(6));
-				this.setAgent_login(rs.getString(7));
-				
+				this.setAgent_login(rs.getString(7));	
+			}
+			if(readyflag == 0){
+					System.out.println("Invalid Estate ID! Try again!");
+					estateMenu();
 			}
 			rs.close();
 			pstm.close();
@@ -473,8 +475,6 @@ public class EstateManagement{
 			}
 			rs.close();
 			pstm.close();
-			
-			con.closeConnection();;
 		}
 		catch(Exception e){
 			e.printStackTrace();	
@@ -502,6 +502,7 @@ public class EstateManagement{
 			
 			pstm.executeUpdate();
 			pstm.close();
+			con.getConnection().commit();
 			con.closeConnection();;
 		}
 		catch(Exception e){
@@ -535,16 +536,27 @@ public class EstateManagement{
 				pstm.close();
 				
 			}
+			
+			
 			sql = "DELETE FROM ESTATE WHERE ESTATE_ID = ? ";
 			pstm = con.getConnection().prepareStatement(sql);
 			pstm.setString(1, this.getEstate_id());
 			
 			pstm.executeUpdate();
+			con.getConnection().commit();
 			pstm.close();
 			con.closeConnection();;
 		}
 		catch(Exception e){
-			e.printStackTrace();	
+			e.printStackTrace();
+			
+				try {
+					con.getConnection().rollback();
+				} catch (SQLException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+			
 		}
 	}
 	
