@@ -50,7 +50,6 @@ public class Login {
 			}
 			rs.close();
 			pstm.close();
-			con.closeConnection();;
 		}
 		catch(Exception e){
 			e.printStackTrace();
