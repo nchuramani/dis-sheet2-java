@@ -29,6 +29,7 @@ public class DBConManager {
 
 			Class.forName(JDBC_DRIVER);
 		    conn = DriverManager.getConnection(DB_URL,USER,PASS);
+		    conn.setAutoCommit(false);
 		}
 		catch(Exception e){
 			e.printStackTrace();
